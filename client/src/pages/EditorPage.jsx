@@ -197,11 +197,12 @@ const EditorPage = () => {
                 <Editor
                     socketRef={socketRef}
                     roomId={roomId}
-                    onCodeChange={(code) => {
+                    onCodeChange={(code, cursor) => {
                         codeRef.current = code;
                         socketRef.current.emit(ACTIONS.CODE_CHANGE, {
                             roomId,
                             code,
+                            cursor,
                         });
                     }}
                     language={language}

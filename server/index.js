@@ -74,8 +74,13 @@ io.on('connection', (socket) => {
         });
     });
 
-    socket.on(ACTIONS.CODE_CHANGE, async ({ roomId, code }) => {
-        socket.in(roomId).emit(ACTIONS.CODE_CHANGE, { code });
+    socket.on(ACTIONS.CODE_CHANGE, async ({ roomId, code, cursor }) => {
+        socket.in(roomId).emit(ACTIONS.CODE_CHANGE, { 
+            code, 
+            cursor, // Forward cursor position (optional)
+            socketId: socket.id,
+            username: userSocketMap[socket.id]
+        });
         // Save to DB (Fire and forget or debounced in real app)
         try {
             await Room.findOneAndUpdate({ roomId }, { code }, { upsert: true });
