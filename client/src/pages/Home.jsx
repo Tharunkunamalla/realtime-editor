@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { v4 as uuidV4 } from 'uuid';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Home = () => {
     const navigate = useNavigate();
+    const location = useLocation();
 
-    const [roomId, setRoomId] = useState('');
+    const [roomId, setRoomId] = useState(location.state?.roomId || '');
     const [username, setUsername] = useState('');
     const createNewRoom = (e) => {
         e.preventDefault();
@@ -14,6 +15,12 @@ const Home = () => {
         setRoomId(id);
         toast.success('Created a new room');
     };
+
+    React.useEffect(() => {
+        if (location.state?.roomId) {
+            toast.success('Enter your username to join the room.');
+        }
+    }, [location.state]);
 
     const joinRoom = () => {
         if (!roomId || !username) {

@@ -98,6 +98,14 @@ io.on('connection', (socket) => {
         if(language) io.to(socketId).emit(ACTIONS.LANGUAGE_CHANGE, { language });
     });
 
+    socket.on(ACTIONS.CURSOR_CHANGE, ({ roomId, cursor }) => {
+        socket.in(roomId).emit(ACTIONS.CURSOR_CHANGE, {
+            socketId: socket.id,
+            cursor,
+            username: userSocketMap[socket.id]
+        });
+    });
+
     socket.on('disconnecting', () => {
         const rooms = [...socket.rooms];
         rooms.forEach((roomId) => {

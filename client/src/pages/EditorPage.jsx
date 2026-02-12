@@ -36,6 +36,7 @@ const EditorPage = () => {
     
     // But we need the language too. For now hardcode or add selector.
     const [language, setLanguage] = useState('javascript');
+    const [socketInitialized, setSocketInitialized] = useState(false);
 
     const LANGUAGES = [
         "javascript",
@@ -84,14 +85,7 @@ const EditorPage = () => {
                     socketRef.current.emit(ACTIONS.SYNC_CODE, {
                         code: codeRef.current,
                         socketId,
-                        language, // Should sync current language too? Or rely on server state? 
-                        // Server state is better but if new user joins, we might want to sync our state if we are host?
-                        // Actually server sends language on JOIN if it exists in DB/memory.
-                        // But if we just changed it and someone joins?
-                        // Server broadcast LANGUAGE_CHANGE.
-                        // Better to rely on server persistence.
-                        // However, for immediate sync to new joiner:
-                        // The server logic I added emits LANGUAGE_CHANGE to the room on JOIN if it exists in DB.
+                        language, 
                     });
                 }
             );
@@ -113,6 +107,8 @@ const EditorPage = () => {
                     });
                 }
             );
+
+            setSocketInitialized(true);
         };
         init();
         return () => {
@@ -140,7 +136,7 @@ const EditorPage = () => {
     }
 
     if (!location.state) {
-        return <Navigate to="/" />;
+        return <Navigate to="/" state={{ roomId }} />;
     }
 
     return (
@@ -154,15 +150,25 @@ const EditorPage = () => {
                             alt="logo"
                         />
                     </div>
-                    <h3>Connected</h3>
-                    <div className="clientsList">
-                        {clients.map((client) => (
-                            <Client
-                                key={client.socketId}
-                                username={client.username}
-                            />
-                        ))}
-                    </div>
+                    {/* Show connected status only when others are present */}
+                    {clients.length > 1 && (
+                        <>
+                            <h3>Connected</h3>
+                            <div className="clientsList">
+                                {clients.map((client) => (
+                                    <Client
+                                        key={client.socketId}
+                                        username={client.username}
+                                    />
+                                ))}
+                            </div>
+                        </>
+                    )}
+                    {clients.length <= 1 && (
+                         <div className="waitingForInfo">
+                            <p>Waiting for others to join...</p>
+                         </div>
+                    )}
                 </div>
                 <div className="languageSelector">
                     <select 
