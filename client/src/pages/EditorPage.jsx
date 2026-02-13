@@ -38,6 +38,8 @@ const EditorPage = () => {
     const [language, setLanguage] = useState('javascript');
     const [socketInitialized, setSocketInitialized] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isLangOpen, setIsLangOpen] = useState(false);
+    const langMenuRef = useRef(null);
 
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -47,6 +49,18 @@ const EditorPage = () => {
         setIsMobileMenuOpen(false);
     };
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (langMenuRef.current && !langMenuRef.current.contains(event.target)) {
+                setIsLangOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     const LANGUAGES = [
         "javascript",
@@ -57,9 +71,9 @@ const EditorPage = () => {
         "php",
     ];
 
-    const onLanguageChange = (e) => {
-        const lang = e.target.value;
+    const handleLangChange = (lang) => {
         setLanguage(lang);
+        setIsLangOpen(false);
         socketRef.current.emit(ACTIONS.LANGUAGE_CHANGE, {
             roomId,
             language: lang,
@@ -195,18 +209,29 @@ const EditorPage = () => {
                 {isMobileMenuOpen && <div className="mobileMenuOverlay" onClick={() => setIsMobileMenuOpen(false)}></div>}
                 
                 <div className="asideControls">
-                    <div className="languageSelector">
-                        <select 
-                            className="langSelect" 
-                            onChange={onLanguageChange} 
-                            value={language}
-                        >
-                            {LANGUAGES.map((lang) => (
-                                <option key={lang} value={lang}>
-                                    {lang.toUpperCase()}
-                                </option>
-                            ))}
-                        </select>
+                    <div className="languageSelector" ref={langMenuRef}>
+                        <div className="languageDropdown">
+                            <div 
+                                className="dropdownBtn" 
+                                onClick={() => setIsLangOpen(!isLangOpen)}
+                            >
+                                {language.toUpperCase()}
+                                <span className={`arrow ${isLangOpen ? 'open' : ''}`}>▼</span>
+                            </div>
+                            {isLangOpen && (
+                                <div className="dropdownMenu">
+                                    {LANGUAGES.map((lang) => (
+                                        <div 
+                                            key={lang} 
+                                            className={`dropdownItem ${lang === language ? 'active' : ''}`}
+                                            onClick={() => handleLangChange(lang)}
+                                        >
+                                            {lang.toUpperCase()}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                     <button className="btn leaveBtn" onClick={leaveRoom}>
                         Leave
