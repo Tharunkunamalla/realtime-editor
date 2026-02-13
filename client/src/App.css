@@ -116,15 +116,74 @@ footer a:hover {
 @media (max-width: 768px) {
     .mainWrap {
         grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr; /* Header/Aside(collapsed) | Editor */
+        grid-template-rows: auto 1fr; /* Header/Aside | Editor */
     }
     
     .aside {
-        display: none; /* Hiding sidebar for now to maximize editor space, or we can make it a hamburger menu later if requested. */
-        /* For now, to satisfy "make the output screen below", the editorWrap is the key */
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid #424242;
+        padding: 10px;
+        align-items: center;
+        gap: 10px;
+        overflow-x: auto;
     }
     
-    /* If we want to keep sidebar features, we might need a navbar. But for this specific request "make output screen below", I'll prioritize editorWrap. */
+    .asideInner {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 15px;
+        flex: 1;
+        overflow: visible;
+    }
+    
+    .logo {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+        margin-right: 10px;
+    }
+    
+    .logoImage {
+        height: 35px;
+    }
+    
+    .clientsList {
+        margin-top: 0;
+        gap: 10px;
+        flex-wrap: nowrap;
+    }
+    
+    .userName {
+        display: none;
+    }
+    
+    .languageSelector {
+        margin-bottom: 0;
+        min-width: 80px;
+    }
+    
+    .langSelect {
+        margin-top: 0;
+        margin-bottom: 0;
+        padding: 5px;
+        height: 30px;
+    }
+    
+    .copyBtn, .leaveBtn {
+        margin-top: 0;
+        width: auto;
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+    
+    .waitingForInfo {
+        display: none;
+    }
 }
 
 .aside {
