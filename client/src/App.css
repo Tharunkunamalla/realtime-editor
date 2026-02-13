@@ -255,14 +255,32 @@ footer a:hover {
 .langSelect {
     width: 100%;
     padding: 10px;
-    border-radius: 5px;
+    border-radius: 8px;
     margin-top: 10px;
     margin-bottom: 10px;
-    background: #282a36;
+    background: rgba(255, 255, 255, 0.05);
     color: #fff;
-    border: 1px solid #424242;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     font-weight: bold;
     cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.langSelect:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.langSelect:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #4aed88;
+}
+
+.langSelect option {
+    background: #282a36;
+    color: #fff;
 }
 
 .languageSelector {
@@ -342,11 +360,13 @@ footer a:hover {
     .langSelect {
         margin-top: 0;
         margin-bottom: 0;
-        padding: 5px;
+        padding: 5px 10px;
         height: auto;
         font-size: 14px;
-        background-color: #282a36;
+        background: rgba(255, 255, 255, 0.05);
         color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px);
     }
     
     .copyBtn, .leaveBtn {
