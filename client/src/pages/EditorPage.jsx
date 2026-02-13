@@ -37,6 +37,12 @@ const EditorPage = () => {
     // But we need the language too. For now hardcode or add selector.
     const [language, setLanguage] = useState('javascript');
     const [socketInitialized, setSocketInitialized] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+
 
     const LANGUAGES = [
         "javascript",
@@ -145,7 +151,10 @@ const EditorPage = () => {
     return (
         <div className="mainWrap">
             <div className="aside">
-                <div className="asideInner">
+                <button className="mobileMenuBtn" onClick={toggleMobileMenu}>
+                    &#9776;
+                </button>
+                <div className={`asideInner ${isMobileMenuOpen ? 'show' : ''}`}>
                     <div className="logo">
                         <img
                             className="logoImage"
@@ -172,7 +181,12 @@ const EditorPage = () => {
                             <p>Waiting for others to join...</p>
                          </div>
                     )}
+                    <button className="btn copyBtn" onClick={copyRoomId}>
+                        Copy ROOM ID
+                    </button>
                 </div>
+                {isMobileMenuOpen && <div className="mobileMenuOverlay" onClick={() => setIsMobileMenuOpen(false)}></div>}
+                
                 <div className="asideControls">
                     <div className="languageSelector">
                         <select 
@@ -187,9 +201,6 @@ const EditorPage = () => {
                             ))}
                         </select>
                     </div>
-                    <button className="btn copyBtn" onClick={copyRoomId}>
-                        Copy ROOM ID
-                    </button>
                     <button className="btn leaveBtn" onClick={leaveRoom}>
                         Leave
                     </button>

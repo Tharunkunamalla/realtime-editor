@@ -115,6 +115,21 @@ footer a:hover {
 
 /* Moved media queries to the end of the file */
 
+/* Mobile Menu Button */
+.mobileMenuBtn {
+    display: none;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.mobileMenuOverlay {
+    display: none;
+}
+
 .aside {
     background: #1c1e29;
     padding: 16px;
@@ -335,83 +350,80 @@ footer a:hover {
         flex-shrink: 0;
     }
     
+    .mobileMenuBtn {
+        display: block;
+        margin-right: 10px;
+    }
+
+    .mobileMenuOverlay {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+        backdrop-filter: blur(2px);
+    }
+    
     .asideInner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 250px;
+        background: #1c1e29;
         display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 15px;
-        overflow: hidden; /* Truncate if too long */
-        flex-shrink: 1; /* Allow shrinking */
-        flex-basis: auto;
+        flex-direction: column;
+        align-items: flex-start; /* Align contents to left in drawer */
+        padding: 20px;
+        gap: 20px;
+        z-index: 100;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+        border-right: 1px solid #424242;
+        overflow-y: auto;
     }
     
-    .asideControls {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 8px; /* Compact gap */
-        flex-shrink: 0; /* Do not shrink controls */
+    .asideInner.show {
+        transform: translateX(0);
     }
 
-    .logo {
-        border-bottom: none;
-        margin-bottom: 0;
-        padding-bottom: 0;
-        margin-right: 0;
-    }
-    
-    .logoImage {
-        height: 25px;
-    }
-    
+    /* Adjust items inside drawer */
     .clientsList {
-        margin-top: 0;
-        gap: 5px;
-        flex-wrap: nowrap;
-        overflow-x: auto; /* Allow client list to scroll if very long */
-        max-width: 100px; /* Limit width */
+        flex-wrap: wrap;
+        max-width: 100%;
+        overflow-x: visible;
+        margin-top: 10px;
+    }
+    
+    .client {
+        align-items: center;
+        width: auto;
     }
 
-    /* Hide client name completely on mobile to save space, or just avatar? */
-    /* Code says .userName display: none already */
-    
     .userName {
-        display: none;
+        display: block; /* Show names in drawer */
+        margin-top: 5px;
     }
-    
-    .languageSelector {
-        margin-bottom: 0;
-        min-width: 0; /* Allow shrinking if desperate */
-    }
-    
-    .langSelect {
-        margin-top: 0;
-        margin-bottom: 0;
-        padding: 5px 5px;
-        height: 30px;
-        font-size: 12px;
-        /* Inheriting desktop gradient and styles */
-    }
-    
-    .copyBtn, .leaveBtn {
-        margin-top: 0;
-        width: auto !important;
-        padding: 5px 8px;
-        font-size: 11px;
-        white-space: nowrap;
-        height: 30px; /* Match selector height */
-        display: flex;
-        align-items: center;
-        justify-content: center;
+
+    .asideControls {
+        margin-left: auto; /* Push controls to right */
     }
 
     .copyBtn {
-        font-size: 0; /* Hide text */
+        width: 100% !important;
+        margin-top: auto;
+        font-size: 14px;
+        height: 40px;
     }
+    
     .copyBtn::after {
-        content: 'ID'; /* Replace "Copy ROOM ID" with "ID" */
-        font-size: 11px;
+        content: normal; /* Restore text for drawer */
     }
+
 
     
     .waitingForInfo {
