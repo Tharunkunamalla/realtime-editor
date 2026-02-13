@@ -252,30 +252,42 @@ footer a:hover {
     color: #ff5555;
 }
 
+/* Aside Controls Group */
+.asideControls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Glassmorphism V2 */
 .langSelect {
     width: 100%;
     padding: 10px;
     border-radius: 8px;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    background: rgba(255, 255, 255, 0.05);
+    margin-top: 0; /* Handled by gap in asideControls */
+    margin-bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
     color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     font-weight: bold;
     cursor: pointer;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     transition: all 0.3s ease;
     outline: none;
 }
 
 .langSelect:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
 }
 
 .langSelect:focus {
     background: rgba(255, 255, 255, 0.15);
     border-color: #4aed88;
+    box-shadow: 0 0 0 2px rgba(74, 237, 136, 0.2);
 }
 
 .langSelect option {
@@ -316,8 +328,9 @@ footer a:hover {
         border-bottom: 1px solid #424242;
         padding: 5px 10px;
         align-items: center;
+        justify-content: space-between; /* Space between Info and Controls */
         gap: 10px;
-        overflow-x: auto;
+        overflow-x: hidden; /* Prevent body scroll, handle inner scroll if needed but better to fit */
         background: #1c1e29;
         flex-shrink: 0;
     }
@@ -327,26 +340,40 @@ footer a:hover {
         flex-direction: row;
         align-items: center;
         gap: 15px;
-        flex: 1;
-        overflow: visible;
+        overflow: hidden; /* Truncate if too long */
+        flex-shrink: 1; /* Allow shrinking */
+        flex-basis: auto;
     }
     
+    .asideControls {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px; /* Compact gap */
+        flex-shrink: 0; /* Do not shrink controls */
+    }
+
     .logo {
         border-bottom: none;
         margin-bottom: 0;
         padding-bottom: 0;
-        margin-right: 10px;
+        margin-right: 0;
     }
     
     .logoImage {
-        height: 35px;
+        height: 30px; /* Slightly smaller */
     }
     
     .clientsList {
         margin-top: 0;
-        gap: 10px;
+        gap: 5px;
         flex-wrap: nowrap;
+        overflow-x: auto; /* Allow client list to scroll if very long */
+        max-width: 100px; /* Limit width */
     }
+
+    /* Hide client name completely on mobile to save space, or just avatar? */
+    /* Code says .userName display: none already */
     
     .userName {
         display: none;
@@ -354,28 +381,38 @@ footer a:hover {
     
     .languageSelector {
         margin-bottom: 0;
-        min-width: 100px;
+        min-width: 0; /* Allow shrinking if desperate */
     }
     
     .langSelect {
         margin-top: 0;
         margin-bottom: 0;
-        padding: 5px 10px;
-        height: auto;
-        font-size: 14px;
-        background: rgba(255, 255, 255, 0.05);
-        color: #fff;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(5px);
+        padding: 5px 5px; /* Tighter padding */
+        height: 30px;
+        font-size: 13px;
+        /* Keep glass styles from above */
     }
     
     .copyBtn, .leaveBtn {
         margin-top: 0;
         width: auto !important;
-        padding: 5px 10px;
-        font-size: 12px;
+        padding: 5px 8px;
+        font-size: 11px;
         white-space: nowrap;
+        height: 30px; /* Match selector height */
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
+
+    .copyBtn {
+        font-size: 0; /* Hide text */
+    }
+    .copyBtn::after {
+        content: 'ID'; /* Replace "Copy ROOM ID" with "ID" */
+        font-size: 11px;
+    }
+
     
     .waitingForInfo {
         display: none;

@@ -173,25 +173,27 @@ const EditorPage = () => {
                          </div>
                     )}
                 </div>
-                <div className="languageSelector">
-                    <select 
-                        className="langSelect" 
-                        onChange={onLanguageChange} 
-                        value={language}
-                    >
-                        {LANGUAGES.map((lang) => (
-                            <option key={lang} value={lang}>
-                                {lang.toUpperCase()}
-                            </option>
-                        ))}
-                    </select>
+                <div className="asideControls">
+                    <div className="languageSelector">
+                        <select 
+                            className="langSelect" 
+                            onChange={onLanguageChange} 
+                            value={language}
+                        >
+                            {LANGUAGES.map((lang) => (
+                                <option key={lang} value={lang}>
+                                    {lang.toUpperCase()}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <button className="btn copyBtn" onClick={copyRoomId}>
+                        Copy ROOM ID
+                    </button>
+                    <button className="btn leaveBtn" onClick={leaveRoom}>
+                        Leave
+                    </button>
                 </div>
-                <button className="btn copyBtn" onClick={copyRoomId}>
-                    Copy ROOM ID
-                </button>
-                <button className="btn leaveBtn" onClick={leaveRoom}>
-                    Leave
-                </button>
             </div>
             <div className="editorWrap">
                 <Editor
