@@ -27,6 +27,9 @@ mongoose.connect(process.env.MONGO_URI)
     .catch(err => console.log(err));
 
 const userSocketMap = {};
+const dbDebounce = {}; // Map to store debounce timers for saving code
+const saveLanguageDebounce = {}; // Debounce for language
+
 
 function getAllConnectedClients(roomId) {
     // Map
@@ -74,28 +77,41 @@ io.on('connection', (socket) => {
         });
     });
 
-    socket.on(ACTIONS.CODE_CHANGE, async ({ roomId, code, cursor }) => {
+    socket.on(ACTIONS.CODE_CHANGE, ({ roomId, code, cursor }) => {
         socket.in(roomId).emit(ACTIONS.CODE_CHANGE, { 
             code, 
             cursor, // Forward cursor position (optional)
             socketId: socket.id,
             username: userSocketMap[socket.id]
         });
-        // Save to DB (Fire and forget or debounced in real app)
-        try {
-            await Room.findOneAndUpdate({ roomId }, { code }, { upsert: true });
-        } catch (err) {
-            console.error("Error saving code to DB:", err);
-        }
+        
+        // Save to DB (Debounced)
+        if (dbDebounce[roomId]) clearTimeout(dbDebounce[roomId]);
+        
+        dbDebounce[roomId] = setTimeout(async () => {
+             try {
+                 await Room.findOneAndUpdate({ roomId }, { code }, { upsert: true });
+                 delete dbDebounce[roomId];
+             } catch (err) {
+                 console.error("Error saving code to DB:", err);
+             }
+        }, 1000); // 1-second debounce (prevents spamming DB)
     });
 
-    socket.on(ACTIONS.LANGUAGE_CHANGE, async ({ roomId, language }) => {
+    socket.on(ACTIONS.LANGUAGE_CHANGE, ({ roomId, language }) => {
         io.to(roomId).emit(ACTIONS.LANGUAGE_CHANGE, { language });
-        try {
-            await Room.findOneAndUpdate({ roomId }, { language }, { upsert: true });
-        } catch (err) {
-            console.error("Error saving language to DB:", err);
-        }
+        
+        // Save to DB (Debounced)
+        if (saveLanguageDebounce[roomId]) clearTimeout(saveLanguageDebounce[roomId]);
+        
+        saveLanguageDebounce[roomId] = setTimeout(async () => {
+             try {
+                 await Room.findOneAndUpdate({ roomId }, { language }, { upsert: true });
+                 delete saveLanguageDebounce[roomId];
+             } catch (err) {
+                 console.error("Error saving language to DB:", err);
+             }
+        }, 500);
     });
 
     socket.on(ACTIONS.SYNC_CODE, ({ socketId, code, language }) => { // Sync language too
