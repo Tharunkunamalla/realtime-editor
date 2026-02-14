@@ -525,8 +525,10 @@ footer h4 {
         justify-content: space-between;
         gap: 15px; /* Increased gap */
         overflow-x: visible; /* No scroll needed if we fit everything */
-        background: #1c1e29;
+        background: #101117;
         flex-shrink: 0;
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
     }
     
     .mobileMenuBtn {
@@ -587,6 +589,9 @@ footer h4 {
         font-size: 28px;
         cursor: pointer;
         padding: 5px;
+    }
+    .closeMenuBtn:hover {
+        color: #4aed88;
     }
 
     /* Adjust items inside drawer */
@@ -657,5 +662,11 @@ footer h4 {
         border-left: none;
         height: 100%;
         width: 100%;
+        padding: 5px; /* Reduce padding on mobile */
+    }
+
+    .outputHeader {
+        flex-wrap: wrap;
+        gap: 5px;
     }
 }
