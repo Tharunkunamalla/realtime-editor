@@ -89,6 +89,7 @@ const EditorPage = () => {
             function handleErrors(e) {
                 console.log('socket error', e);
                 toast.error('Socket connection failed, try again later.');
+                setIsClientsLoading(false);
             }
 
             socketRef.current.emit(ACTIONS.JOIN, {
@@ -235,7 +236,8 @@ const EditorPage = () => {
                             )}
                             {uniqueClients.length <= 1 && (
                                 <div className="waitingForInfo">
-                                   <p>Waiting for others to join...</p>
+                                    <div className="loader" style={{width: '20px', height: '20px', borderWidth: '2px', marginBottom: '10px'}}></div>
+                                    <p>Waiting for others to join...</p>
                                 </div>
                             )}
                         </>
