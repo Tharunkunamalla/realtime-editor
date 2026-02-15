@@ -24,6 +24,7 @@ const EditorPage = () => {
     const { roomId } = useParams();
     const reactNavigator = useNavigate();
     const [clients, setClients] = useState([]);
+    const [isClientsLoading, setIsClientsLoading] = useState(true);
 
     // We need the editor instance to get value in Output component, 
     // OR we just rely on codeRef.current which is updated on change.
@@ -99,6 +100,7 @@ const EditorPage = () => {
             socketRef.current.on(
                 ACTIONS.JOINED,
                 ({ clients, username, socketId }) => {
+                    setIsClientsLoading(false);
                     if (username !== location.state?.username) {
                         toast.success(`${username} joined the room.`);
                     }
@@ -212,24 +214,32 @@ const EditorPage = () => {
                         />
                     </div>
                     {/* Show connected status only when others are present */}
-                    {uniqueClients.length > 1 && (
+                    {isClientsLoading ? (
+                        <div className="loader-container">
+                            <div className="loader"></div>
+                        </div>
+                    ) : (
                         <>
-                            <h3>Connected</h3>
-                            <div className="clientsList">
-                                {uniqueClients.map((client) => (
-                                    <Client
-                                        key={client.socketId}
-                                        username={client.username}
-                                    />
-                                ))}
-                            </div>
+                            {uniqueClients.length > 0 && (
+                                <>
+                                    <h3>Connected</h3>
+                                    <div className="clientsList">
+                                        {uniqueClients.map((client) => (
+                                            <Client
+                                                key={client.socketId}
+                                                username={client.username}
+                                            />
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                            {uniqueClients.length <= 1 && (
+                                <div className="waitingForInfo">
+                                   <p>Waiting for others to join...</p>
+                                </div>
+                            )}
                         </>
                     )}
-                    {uniqueClients.length <= 1 && (
-                        <div className="waitingForInfo">
-                           <p>Waiting for others to join...</p>
-                        </div>
-                   )}
                     <button className="btn copyBtn" onClick={copyRoomId}>
                         Copy ROOM ID
                     </button>
