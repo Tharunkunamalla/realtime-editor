@@ -63,7 +63,7 @@ io.on('connection', (socket) => {
                     io.to(roomId).emit(ACTIONS.LANGUAGE_CHANGE, { language: room.language });
                 } else {
                     // Create new room in DB if not exists
-                    await Room.create({ roomId, code: '', language: 'javascript' });
+                    await Room.create({ roomId, code: '// Write your code here', language: 'javascript' });
                 }
             } catch (err) {
                 console.error("Error loading room from DB:", err);
