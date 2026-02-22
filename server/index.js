@@ -177,42 +177,30 @@ const PORT = process.env.PORT || 5000;
 
 // Proxy Execution Route to bypass CORS
 app.post('/api/execute', async (req, res) => {
-    const { language, files } = req.body;
+    const { language, version, files } = req.body;
     
-    // We'll use a known-working public Piston instance that is more permissive
-    const PISTON_URL = 'https://emkc.org/api/v2/piston/execute';
+    // We'll use your private Piston if set, or a reliable public one
+    const PISTON_URL = process.env.PISTON_URL || 'https://emkc.org/api/v2/piston/execute';
     
     try {
-        console.log(`Attempting execution for ${language}...`);
-        
         const response = await axios.post(PISTON_URL, {
             language: language,
-            version: "*",
+            version: version || "*",
             files: files
         }, {
-            timeout: 10000 // 10s timeout
+            headers: {
+                'User-Agent': 'CodeSync-App-Collaboration-Platform'
+            },
+            timeout: 15000 
         });
 
         res.json(response.data);
     } catch (error) {
-        console.error("Execution Error Detail:", error.response?.data || error.message);
-        
-        // Final ultimate fallback: A different Piston instance
-        try {
-            console.log("Primary failed, trying overflow instance...");
-            const altResponse = await axios.post('https://piston.engineer-man.workers.dev/api/v2/execute', {
-                language: language,
-                version: "*",
-                files: files
-            });
-            return res.json(altResponse.data);
-        } catch (altError) {
-            console.error("All engines failed.");
-            res.status(500).json({ 
-                message: "Execution service busy. Please try again in a few seconds.",
-                details: error.response?.data?.message || error.message 
-            });
-        }
+        console.error("Execution Error:", error.response?.data || error.message);
+        res.status(500).json({ 
+            message: "Execution Engine Error",
+            details: error.response?.data?.message || error.message 
+        });
     }
 });
 
