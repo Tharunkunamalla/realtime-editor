@@ -179,29 +179,43 @@ const PORT = process.env.PORT || 5000;
 app.post('/api/execute', async (req, res) => {
     const { language, version, files } = req.body;
     
-    // We'll use your private Piston if set, or a reliable public one
-    const PISTON_URL = process.env.PISTON_URL || 'https://emkc.org/api/v2/piston/execute';
-    
-    try {
-        const response = await axios.post(PISTON_URL, {
-            language: language,
-            version: version || "*",
-            files: files
-        }, {
-            headers: {
-                'User-Agent': 'CodeSync-App-Collaboration-Platform'
-            },
-            timeout: 15000 
-        });
+    // We'll try 3 different endpoints to ensure one works
+    const endpoints = [
+        'https://emkc.org/api/v2/piston/execute',
+        'https://piston.engineer-man.workers.dev/api/v2/execute', // Alternate mirror
+        'https://api.codex.jaagrav.in' // Non-Piston fallback
+    ];
 
-        res.json(response.data);
-    } catch (error) {
-        console.error("Execution Error:", error.response?.data || error.message);
-        res.status(500).json({ 
-            message: "Execution Engine Error",
-            details: error.response?.data?.message || error.message 
-        });
+    for (let url of endpoints) {
+        try {
+            console.log(`[EXEC] Trying endpoint: ${url}`);
+            
+            // Format payload for CodeX if we are on that URL
+            const isCodex = url.includes('codex');
+            const payload = isCodex 
+                ? { language: language === 'javascript' ? 'js' : language, code: files[0].content }
+                : { language, version: version || "*", files };
+
+            const response = await axios.post(url, payload, {
+                headers: { 'User-Agent': 'Mozilla/5.0' },
+                timeout: 8000
+            });
+
+            // Normalize CodeX response to match Piston format
+            if (isCodex) {
+                return res.json({
+                    run: { output: response.data.output || response.data.error, stderr: response.data.error || "" }
+                });
+            }
+
+            return res.json(response.data);
+        } catch (error) {
+            console.error(`[EXEC] Failed at ${url}:`, error.message);
+            continue; // Try next one
+        }
     }
+
+    res.status(500).json({ message: "All execution engines are busy. Try again in 10 seconds." });
 });
 
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
