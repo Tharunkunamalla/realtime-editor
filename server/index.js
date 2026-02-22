@@ -179,10 +179,10 @@ const PORT = process.env.PORT || 5000;
 app.post('/api/execute', async (req, res) => {
     const { language, version, files } = req.body;
     
-    // Use private Piston if provided, otherwise fallback to public
-    const PISTON_URL = process.env.PISTON_URL || 'https://emkc.org/api/v2/piston/execute';
-    
     try {
+        // We will try our own Piston first if URL is set, otherwise use a public reliable fallback
+        const PISTON_URL = process.env.PISTON_URL || 'https://emkc.org/api/v2/piston/execute';
+        
         const response = await axios.post(PISTON_URL, {
             language,
             version,
@@ -190,21 +190,25 @@ app.post('/api/execute', async (req, res) => {
         });
         res.json(response.data);
     } catch (error) {
-        // If private Piston failed, try the public one as a last resort
-        if (process.env.PISTON_URL) {
-             try {
-                const retryResponse = await axios.post('https://emkc.org/api/v2/piston/execute', {
-                    language,
-                    version,
-                    files
-                });
-                return res.json(retryResponse.data);
-             } catch (retryError) {
-                console.error("Public Piston Error:", retryError.message);
-             }
+        // If Piston 401s or fails, we fallback to a secondary reliable free API
+        console.warn("Piston failed, trying fallback...");
+        try {
+            const fallbackResponse = await axios.post('https://api.codex.jaagrav.in', {
+                language: language === 'javascript' ? 'js' : language, // Normalize language codes
+                code: files[0].content
+            });
+            
+            // Map the different API response format back to what your frontend expects
+            return res.json({
+                run: {
+                    output: fallbackResponse.data.output || fallbackResponse.data.error,
+                    stderr: fallbackResponse.data.error ? fallbackResponse.data.error : ""
+                }
+            });
+        } catch (fallbackError) {
+             console.error("All execution engines failed:", fallbackError.message);
+             res.status(500).json({ message: "Code execution service currently unavailable" });
         }
-        console.error("Piston Proxy Error:", error.response?.data || error.message);
-        res.status(error.response?.status || 500).json(error.response?.data || { message: "Execution Failed" });
     }
 });
 
