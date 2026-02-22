@@ -175,55 +175,62 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 5000;
 
-// Proxy Execution Route to bypass CORS
+// Proxy Execution Route using Judge0 (Professional/Stable)
 app.post('/api/execute', async (req, res) => {
-    const { language, version, files } = req.body;
+    const { language, files } = req.body;
     const code = files[0]?.content || "";
-    
-    // Ordered by reliability (Python Discord mirror is very stable)
-    const endpoints = [
-        { url: 'https://piston.pydis.com/api/v2/execute', type: 'piston' },
-        { url: 'https://emkc.org/api/v2/piston/execute', type: 'piston' },
-        { url: 'https://api.codex.jaagrav.in', type: 'codex' }
-    ];
 
-    for (let target of endpoints) {
-        try {
-            console.log(`[EXEC] Attempting: ${target.url}`);
-            
-            let payload;
-            if (target.type === 'piston') {
-                payload = { 
-                    language: language, 
-                    version: version || "*", 
-                    files: [{ name: "index", content: code }] // Filename is mandatory for some mirrors
-                };
-            } else {
-                payload = { 
-                    language: language === 'javascript' ? 'js' : language, 
-                    code: code 
-                };
-            }
+    // If no API Key is set, try a public fallback but warn
+    const apiKey = process.env.RAPIDAPI_KEY;
+    const apiHost = process.env.RAPIDAPI_HOST || 'judge0-ce.p.rapidapi.com';
 
-            const response = await axios.post(target.url, payload, {
-                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' },
-                timeout: 10000 
-            });
-
-            if (target.type === 'codex') {
-                return res.json({
-                    run: { output: response.data.output || response.data.error, stderr: response.data.error || "" }
-                });
-            }
-
-            return res.json(response.data);
-        } catch (error) {
-            console.error(`[EXEC FAIL] ${target.url}:`, error.response?.data || error.message);
-            continue; 
-        }
+    if (!apiKey) {
+        console.warn("No RAPIDAPI_KEY set! Execution might fail due to IP blocking.");
     }
 
-    res.status(500).json({ message: "System Busy. Please try again in 5 seconds." });
+    try {
+        const response = await axios.post(`https://${apiHost}/submissions?wait=true&fields=stdout,stderr,compile_output,status`, {
+            source_code: code,
+            language_id: getJudge0LanguageId(language),
+            stdin: ""
+        }, {
+            headers: {
+                'x-rapidapi-key': apiKey,
+                'x-rapidapi-host': apiHost,
+                'Content-Type': 'application/json'
+            },
+            timeout: 10000
+        });
+
+        const { stdout, stderr, compile_output } = response.data;
+        res.json({
+            run: {
+                output: stdout || stderr || compile_output || "Execution completed with no output.",
+                stderr: stderr || ""
+            }
+        });
+    } catch (error) {
+        console.error("Execution Error:", error.response?.data || error.message);
+        res.status(500).json({ 
+            message: "Code Runner unreachable. Please ensure RAPIDAPI_KEY is set in Render variables.",
+            details: error.response?.data || error.message 
+        });
+    }
 });
+
+// Helper to map language names to Judge0 internal IDs
+function getJudge0LanguageId(lang) {
+    const map = {
+        'javascript': 63,
+        'node': 63,
+        'python': 71,
+        'java': 62,
+        'cpp': 54,
+        'csharp': 51,
+        'ruby': 72,
+        'php': 68
+    };
+    return map[lang.toLowerCase()] || 63;
+}
 
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
