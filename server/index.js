@@ -175,51 +175,54 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 5000;
 
-// Proxy Execution Route (Keyless Multi-Engine with Debugging)
+// Proxy Execution Route (The "Indestructible" Keyless Runner)
 app.post('/api/execute', async (req, res) => {
     const { language, files } = req.body;
     const code = files[0]?.content || "";
-    let lastError = "No runner attempted";
 
     const runners = [
-        // 1. Pydis (The most stable Piston mirror)
+        // 1. CodeX (Very stable, no keys, high limits)
         async () => {
-            const resp = await axios.post('https://piston.pydis.com/api/v2/execute', {
-                language, version: "*", files: [{ name: "index", content: code }]
-            }, { 
-                headers: { 'User-Agent': 'Mozilla/5.0' },
-                timeout: 10000 
-            });
-            return resp.data;
+            const langMap = { 'javascript': 'js', 'python': 'py', 'java': 'java', 'cpp': 'cpp', 'csharp': 'cs' };
+            const resp = await axios.post('https://api.codex.jaagrav.in', {
+                language: langMap[language] || language,
+                code: code
+            }, { timeout: 8000 });
+            
+            if (resp.data.error) throw new Error(resp.data.error);
+            return { run: { output: resp.data.output, stderr: "" } };
         },
-        
-        // 2. Glot.io (High reliability fallback)
+
+        // 2. Judge0 Public CE (Professional grade)
         async () => {
-            const langMap = { 'javascript': 'javascript', 'python': 'python', 'java': 'java' };
-            const glotLang = langMap[language] || language;
-            const resp = await axios.post(`https://glot.io/api/run/${glotLang}/latest`, {
-                files: [{ name: "main.js", content: code }]
+            const judgeMap = { 'javascript': 63, 'python': 71, 'java': 62, 'cpp': 54 };
+            const resp = await axios.post('https://ce.judge0.com/submissions?wait=true', {
+                source_code: code,
+                language_id: judgeMap[language] || 63
             }, { timeout: 10000 });
-            return { run: { output: resp.data.stdout || resp.data.stderr, stderr: resp.data.stderr || "" } };
+            return { run: { output: resp.data.stdout || resp.data.stderr || resp.data.compile_output, stderr: resp.data.stderr || "" } };
+        },
+
+        // 3. Pydis (Standard Piston Mirror)
+        async () => {
+             const resp = await axios.post('https://piston.pydis.com/api/v2/execute', {
+                language, version: "*", files: [{ name: "main", content: code }]
+            }, { timeout: 8000 });
+            return resp.data;
         }
     ];
 
     for (let runTask of runners) {
         try {
             const data = await runTask();
-            return res.json(data);
+            if (data) return res.json(data);
         } catch (e) {
-            lastError = e.response?.data?.message || e.message;
-            console.error(`Runner failed: ${lastError}`);
+            console.error("Runner failed, trying fallback...");
             continue;
         }
     }
 
-    // Return the actual error so we can see it in the UI
-    res.status(500).json({ 
-        message: "Execution engines failed. Last error: " + lastError,
-        details: lastError
-    });
+    res.status(500).json({ message: "All execution engines are currently down. Please try again in a moment." });
 });
 
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
