@@ -6,6 +6,7 @@ const ACTIONS = require('./Actions');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const axios = require('axios');
 const Room = require('./models/Room');
 
 dotenv.config();
@@ -170,4 +171,21 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 5000;
+
+// Proxy Execution Route to bypass CORS
+app.post('/api/execute', async (req, res) => {
+    const { language, version, files } = req.body;
+    try {
+        const response = await axios.post(process.env.PISTON_URL || 'https://emkc.org/api/v2/piston/execute', {
+            language,
+            version,
+            files
+        });
+        res.json(response.data);
+    } catch (error) {
+        console.error("Piston Proxy Error:", error.response?.data || error.message);
+        res.status(error.response?.status || 500).json(error.response?.data || { message: "Execution Failed" });
+    }
+});
+
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));

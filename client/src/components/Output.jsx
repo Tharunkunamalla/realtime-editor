@@ -77,7 +77,8 @@ export const executeCode = async (language, sourceCode) => {
         php: "8.2.3", 
     };
 
-    const PISTON_URL = (window._env_ && window._env_.VITE_PISTON_URL) || import.meta.env.VITE_PISTON_URL || "/piston/api/v2/execute";
+    const BACKEND_URL = (window._env_ && window._env_.VITE_BACKEND_URL) || import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+    const PISTON_URL = `${BACKEND_URL}/api/execute`;
     const PISTON_API_KEY = (window._env_ && window._env_.VITE_PISTON_API_KEY) || import.meta.env.VITE_PISTON_API_KEY;
 
     const headers = {
