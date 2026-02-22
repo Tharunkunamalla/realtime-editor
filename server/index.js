@@ -178,38 +178,42 @@ const PORT = process.env.PORT || 5000;
 // Proxy Execution Route to bypass CORS
 app.post('/api/execute', async (req, res) => {
     const { language, files } = req.body;
-    const code = files[0].content;
-
+    
+    // We'll use a known-working public Piston instance that is more permissive
+    const PISTON_URL = 'https://emkc.org/api/v2/piston/execute';
+    
     try {
-        // Use a high-uptime public Judge0 instance
-        const response = await axios.post('https://judge0-ce.p.sulu.sh/submissions?wait=true', {
-            source_code: code,
-            language_id: getJudge0LanguageId(language),
-            stdin: ""
+        console.log(`Attempting execution for ${language}...`);
+        
+        const response = await axios.post(PISTON_URL, {
+            language: language,
+            version: "*",
+            files: files
+        }, {
+            timeout: 10000 // 10s timeout
         });
 
-        res.json({
-            run: {
-                output: response.data.stdout || response.data.stderr || response.data.compile_output || "No output",
-                stderr: response.data.stderr || ""
-            }
-        });
+        res.json(response.data);
     } catch (error) {
-        console.error("Execution Engine Failed:", error.message);
-        res.status(500).json({ message: "Code execution service currently unavailable" });
+        console.error("Execution Error Detail:", error.response?.data || error.message);
+        
+        // Final ultimate fallback: A different Piston instance
+        try {
+            console.log("Primary failed, trying overflow instance...");
+            const altResponse = await axios.post('https://piston.engineer-man.workers.dev/api/v2/execute', {
+                language: language,
+                version: "*",
+                files: files
+            });
+            return res.json(altResponse.data);
+        } catch (altError) {
+            console.error("All engines failed.");
+            res.status(500).json({ 
+                message: "Execution service busy. Please try again in a few seconds.",
+                details: error.response?.data?.message || error.message 
+            });
+        }
     }
 });
-
-// Helper to map monikers to Judge0 IDs
-function getJudge0LanguageId(lang) {
-    const map = {
-        'javascript': 63,
-        'python': 71,
-        'java': 62,
-        'cpp': 54,
-        'csharp': 51
-    };
-    return map[lang] || 63;
-}
 
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
